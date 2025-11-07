@@ -5,6 +5,10 @@ from fastapi.responses import JSONResponse
 import logging
 import os
 from dotenv import load_dotenv
+import tempfile
+import shutil
+
+from sonal_aura.analysis import create_audio_report
 
 # Loading environment variables from .env file
 load_dotenv()
@@ -38,11 +42,9 @@ async def analyze_audio(file: UploadFile = File(...)):
     """
     Main endpoint. It will:
     1. Receive an audio file.
-    2. (TODO) Save it temporarily.
-    3. (TODO) Run the DSP analysis (liprosa, etc.).
-    4. (TODO) Build the JSON report.
-    5. (TODO) Send the report to the LLM for feedback generation.
-    6. Return the feedback.
+    2. Call the analysis layer to process it.
+    3. (TODO) Send the report to the LLM for feedback generation.
+    4. Return the feedback.
     """
     if not file.content_type.startswith("audio/"):
         logger.warning(f"Failed upload attempt with invalid file type: {file.content_type}")
@@ -51,11 +53,42 @@ async def analyze_audio(file: UploadFile = File(...)):
             content={"error": f"Invalid file type. Please upload an audio file. Got {file.content_type}."}
         )
     
-    logger.info(f"Received file: {file.filename} of type {file.content_type}")
-    
-    # LOGIC PLACEHOLDER: For now, we just acknowledge receipt of the file.
-    # Future implementation will include saving the file, analyzing it, and generating feedback.
-    return {"filename": file.filename, "status": "File received. Analysis pending."}
+    temp_dir = tempfile.mkdtemp()
+    temp_file_path = os.path.join(temp_dir, file.filename)
 
+    try:
+        # Saving the file temmporarily
+        with open(temp_file_path, "wb") as buffer:
+            shutil.copyfileobj(file.file, buffer)
+        
+        logger.info(f"Received file: {file.filename}, saved temporarily to: {temp_file_path}")
+
+        # Running the DSP analysis
+        report = create_audio_report(temp_file_path)
+
+        # Sending to the LLM for feedback generation (TODO)
+        # For now, we just return the raw report
+        logger.info(f"Analysis complete for file: {file.filename}. Returning report.")
+
+        return {
+            "filename": file.filename,
+            "status": "Analysis complete",
+            "report": report
+        }
+    
+    except Exception as e:
+        logger.error(f"Error processing file {file.filename}: {e}", exc_info=True)
+        return JSONResponse(
+            status_code=500,
+            content={"error": f"An error occurred during analysis: {str(e)}"}
+        )
+    
+    finally:
+        # Cleaning up temporary files
+        await file.close()
+        if os.path.exists(temp_dir):
+            shutil.rmtree(temp_dir)
+            logger.info(f"Cleaned up temporary directory: {temp_dir}")
+    
 if __name__ == "__main__":
     uvicorn.run(app, host="127.0.0.1", port=8000)
