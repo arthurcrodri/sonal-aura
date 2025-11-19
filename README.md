@@ -1,6 +1,7 @@
 # 🎵 Sonal Aura
 
-> **A Hybrid AI Audio Engineering Assistant** > *Combining Digital Signal Processing (DSP) with Large Language Models for professional mixing feedback.*
+> **A Hybrid AI Audio Engineering Assistant**
+> *Combining Digital Signal Processing (DSP) with Large Language Models for professional mixing feedback.*
 
 ![Python](https://img.shields.io/badge/Python-3.10%2B-blue)
 ![FastAPI](https://img.shields.io/badge/FastAPI-0.100%2B-green)
