@@ -17,6 +17,20 @@
 
 This approach reduces API costs by over **99%** compared to multimodal audio processing, while maintaining high precision.
 
+### 🏗️ Architecture Flow
+
+```mermaid
+graph LR
+    A[User Audio File] -->|Upload| B(FastAPI Server)
+    B -->|Raw Audio| C{The Ears: DSP Engine}
+    C -->|Extracts| D[Loudness/LUFS]
+    C -->|Extracts| E[Spectral Data]
+    C -->|Extracts| F[Key/Tonality]
+    D & E & F -->|Aggregated JSON| G{The Brain: LLM}
+    G -->|Prompt Engineering + Context| H[Google Gemini]
+    H -->|Actionable Feedback| I[Final Report]
+```
+
 ## ✨ Key Features
 
 * **📊 Technical Analysis:**
@@ -110,11 +124,29 @@ Sonal Aura comes with automatic interactive documentation.
 4. Upload an audio file (.mp3 or .wav) and click Execute.
 5. The API will return a detailed JSON object with the track's technical profile.
 
+## 📊 Sample Analysis Output
+
+Before sending data to the LLM, Sonal Aura extracts a detailed technical profile:
+
+```json
+{
+  "filename": "mix_v1.mp3",
+  "analysis": {
+    "integrated_loudness": -14.2,
+    "loudness_range": 4.5,
+    "true_peak": -0.8,
+    "key": "C Minor",
+    "spectral_centroid": 2048.5,
+    "stereo_width_score": 0.65
+  }
+}
+```
+
 ## 🗺️ Roadmap
 
 - [x] Phase 1: Architecture Setup (FastAPI skeleton, Environment security)
 - [x] Phase 2: The "Ears" (DSP Analysis pipeline with Librosa)
-- [ ] Phase 3: The "Brain" (Integration with Gemini API for text feedback)
+- [ ] Phase 3: The "Brain" (Implementation of RAG pattern to inject technical context into Gemini prompts for accurate mixing advice)
 - [ ] Phase 4: Frontend (Simple UI using Streamlit)
 
 ## 🤝 Contributing
